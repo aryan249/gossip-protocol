@@ -8,7 +8,6 @@ import (
 
 	"gossip-protocol/network"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -30,9 +29,9 @@ type Node struct {
 	Pubsub    *PubsubManager
 }
 
-func NewNode(ctx context.Context, log *logrus.Entry, conf Config, perpApiAddr []*common.Address) (*Node, error) {
+func NewNode(ctx context.Context, log *logrus.Entry, conf Config) (*Node, error) {
 
-	connGater := NewConnectionGater(ctx, log.WithField("service", "connection_gater"), perpApiAddr)
+	connGater := NewConnectionGater(ctx, log.WithField("service", "connection_gater"))
 	// create a new libp2p host instance
 	h, err := libp2p.New(
 		libp2p.Identity(conf.PrivateKey),
@@ -150,8 +149,8 @@ func (n *Node) ConnectToBootstrapPeers() {
 	wg.Wait()
 }
 
-func (n *Node) JoinTopic(topic string, newMessage func() network.Message) error {
-	return n.Pubsub.JoinTopic(topic, newMessage)
+func (n *Node) JoinTopic(topic string) error {
+	return n.Pubsub.JoinTopic(topic)
 }
 
 func (n *Node) PublishMessage(topic string, msg network.Message) error {

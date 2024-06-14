@@ -12,6 +12,7 @@ import (
 type Config interface {
 	ReadLogLevelConfig() string
 	ReadP2PConfig() P2PConfig
+	ReadDBConfig() PostgresDbConfig
 	GetString(key string) string
 	GetStringMap(key string) map[string]string
 	GetInt64(key string) int64
@@ -25,11 +26,11 @@ type viperConfig struct{}
 
 func (v *viperConfig) Init() {
 	viper.AutomaticEnv()
-	viper.AddConfigPath("./config-file")
+	viper.AddConfigPath("./config-files")
 	replacer := strings.NewReplacer(`.`, `_`)
 	viper.SetEnvKeyReplacer(replacer)
 	viper.SetConfigType(`json`)
-	viper.SetConfigName("perp-api-insert-order.json")
+	viper.SetConfigName("config.json")
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)

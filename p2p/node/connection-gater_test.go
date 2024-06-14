@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	mock "github.com/libp2p/go-libp2p/p2p/net/mock"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/sirupsen/logrus"
@@ -37,10 +36,9 @@ func TestConnectionGater(t *testing.T) {
 
 	guardianSetMapping["ARB"] = guardianSet
 
-	connGater := NewConnectionGater(ctx, logger.WithField("service", "connection_gater"), nil)
+	connGater := NewConnectionGater(ctx, logger.WithField("service", "connection_gater"))
 
 	peer1PrivateKey, _ := ToLibp2pPrivateKey("bb39159966fde2b2353316e2ea0f58da252db67cec22430c6a18f48787d90d02")
-	peer2PublicAddress := common.HexToAddress("0x73DA0fDef5803016785F5F3abA2374D065984339")
 	peer2PrivateKey, _ := ToLibp2pPrivateKey("213f1d9567f011e10c4143d892ac799595c6f16fa3f044c8278a304dbd12ddc4")
 
 	mockNet := mock.New()
@@ -71,7 +69,7 @@ func TestConnectionGater(t *testing.T) {
 	// This is because the connection we are testing here is outbound, and from the point of view of peer 1. For an inbound connection 1 -> 2,
 	// the connection gater would check peer 1's public key, from peer 2's point of view
 
-	connGater = NewConnectionGater(ctx, logger.WithField("service", "connection_gater"), []*common.Address{&peer2PublicAddress})
+	connGater = NewConnectionGater(ctx, logger.WithField("service", "connection_gater"))
 	isAuthorized12, _ = connGater.InterceptUpgraded(n12)
 	isAuthorized21, _ = connGater.InterceptUpgraded(n21)
 	assert.True(t, isAuthorized12, "Connection should be authorized after the address has been added to the list of guardian owners")

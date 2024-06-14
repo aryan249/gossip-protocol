@@ -3,11 +3,9 @@ package p2p
 import (
 	"fmt"
 
-	"gossip-proptocol/config"
-	"gossip-protocol/node"
+	"gossip-protocol/config"
+	"gossip-protocol/p2p/node"
 )
-
-const RelayersP2pUserAgent = "relayers/v1.0.0"
 
 type Config struct {
 	ListenAddresses        []string
@@ -15,7 +13,6 @@ type Config struct {
 	PrivateKey             string
 	DiscoveryMethods       []string
 	EnableSync             bool
-	SendToPerpApi          bool
 }
 
 func ToP2pConfig(config config.P2PConfig) Config {
@@ -25,7 +22,6 @@ func ToP2pConfig(config config.P2PConfig) Config {
 		BootstrapNodeAddresses: config.BootstrapNodeAddresses,
 		DiscoveryMethods:       config.DiscoveryMethods,
 		EnableSync:             config.EnableSync,
-		SendToPerpApi:          config.SendToPerpApi,
 	}
 }
 
@@ -55,7 +51,6 @@ func (c Config) ToNodeConfig() (node.Config, error) {
 		ListenAddresses:  listenAddrs,
 		DiscoveryMethods: discoveryMethods,
 		BootstrapPeers:   bootstrapNodes,
-		UserAgent:        RelayersP2pUserAgent,
 	}
 	return conf, nil
 }

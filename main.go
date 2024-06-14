@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"gossip-protocol/constants"
+	"gossip-protocol/db"
 	"gossip-protocol/network"
 	"gossip-protocol/p2p"
+	"gossip-protocol/processor"
 	"os"
 	"os/signal"
 	"sync"
@@ -22,6 +25,8 @@ func main() {
 	obsReceiveRes := make(chan network.Message, 1)
 	obsSendReq := make(chan network.Message, 1)
 	loggerLevel := cfg.ReadLogLevelConfig()
+	dbConfig := cfg.ReadDBConfig()
+	dbURL := dbConfig.AsPostgresDbUrl()
 	logger := NewRootLogger(loggerLevel, cfg)
 
 	p2pCfg := cfg.ReadP2PConfig()
@@ -40,8 +45,12 @@ func main() {
 	p2pConfig := p2p.ToP2pConfig(p2pCfg)
 
 	p2pNode := p2p.NewP2PNode(ctx, logger.WithField("layer", "p2p"), obsReceiveRes, obsSendReq, p2pConfig)
+	db := db.Init(dbURL)
+	newTracker := network.NewMessageTracker(constants.MAX_MESSAGES, db)
 
 	p2pNode.Start(&wg)
+	wg.Add(1)
+	go processor.Processor(ctx, &wg, obsReceiveRes, newTracker)
 
 }
 
@@ -61,18 +70,4 @@ func NewRootLogger(loggerLevel string, cfg config.Config) *logrus.Logger {
 	logger.SetLevel(logLevel)
 
 	return logger
-}
-
-type NodeDetails struct {
-	WorkerAddress    string   `json:"worker_address"`
-	PrivateKey       string   `json:"private_key"`
-	SingleMarketKeys []string `json:"single_market_keys"`
-}
-
-func ToNodeDetailsConfig(config config.NodeDetailsConfig) NodeDetails {
-	return NodeDetails{
-		WorkerAddress:    config.WorkerAddress,
-		PrivateKey:       config.PrivateKey,
-		SingleMarketKeys: config.SingleMarketKeys,
-	}
 }

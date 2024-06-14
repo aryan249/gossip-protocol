@@ -2,10 +2,17 @@ package network_test
 
 import (
 	"fmt"
+	"gossip-protocol/config"
+	"gossip-protocol/db"
+	database "gossip-protocol/db"
+	"gossip-protocol/db/models"
 	"gossip-protocol/network"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func generateMessage(n int) *network.Message {
@@ -19,7 +26,16 @@ func generateMessage(n int) *network.Message {
 func TestMessageTracker_Add(t *testing.T) {
 	t.Run("add, get, then all messages", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
+
+		mt := network.NewMessageTracker(length, db)
 
 		for i := 0; i < length; i++ {
 			err := mt.Add(generateMessage(i))
@@ -42,7 +58,16 @@ func TestMessageTracker_Add(t *testing.T) {
 
 	t.Run("add, get, then all messages, delete some", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
+
+		mt := network.NewMessageTracker(length, db)
 
 		for i := 0; i < length; i++ {
 			err := mt.Add(generateMessage(i))
@@ -77,7 +102,15 @@ func TestMessageTracker_Add(t *testing.T) {
 
 	t.Run("not full, with duplicates", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		mt := network.NewMessageTracker(length, db)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
 
 		for i := 0; i < length-1; i++ {
 			err := mt.Add(generateMessage(i))
@@ -89,6 +122,9 @@ func TestMessageTracker_Add(t *testing.T) {
 		}
 
 		msgs := mt.Messages()
+		for _, msg := range msgs {
+			println(msg.ID)
+		}
 		assert.Equal(t, []*network.Message{
 			generateMessage(0),
 			generateMessage(1),
@@ -99,7 +135,15 @@ func TestMessageTracker_Add(t *testing.T) {
 
 	t.Run("not full, with duplicates from other peers", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		mt := network.NewMessageTracker(length, db)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
 
 		for i := 0; i < length-1; i++ {
 			err := mt.Add(generateMessage(i))
@@ -113,6 +157,7 @@ func TestMessageTracker_Add(t *testing.T) {
 		}
 
 		msgs := mt.Messages()
+
 		assert.Equal(t, []*network.Message{
 			generateMessage(0),
 			generateMessage(1),
@@ -125,7 +170,16 @@ func TestMessageTracker_Add(t *testing.T) {
 func TestMessageTracker_Cleanup(t *testing.T) {
 	t.Run("overflow and cleanup", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
+
+		mt := network.NewMessageTracker(length, db)
 
 		for i := 0; i < length*2; i++ {
 			err := mt.Add(generateMessage(i))
@@ -144,7 +198,16 @@ func TestMessageTracker_Cleanup(t *testing.T) {
 
 	t.Run("overflow and cleanup with duplicate", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		messages := make([]*models.DBMessages, 0)
+		db.Db.Model(&models.DBMessages{}).Find(&messages)
+
+		db.Db.Delete(&messages)
+
+		mt := network.NewMessageTracker(length, db)
 
 		for i := 0; i < length*2; i++ {
 			err := mt.Add(generateMessage(i))
@@ -170,7 +233,13 @@ func TestMessageTracker_Cleanup(t *testing.T) {
 func TestMessageTracker_Delete(t *testing.T) {
 	t.Run("empty tracker", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		db.Db.Exec("DELETE FROM message")
+
+		mt := network.NewMessageTracker(length, db)
 		err := mt.Delete("bleh")
 		assert.ErrorIs(t, err, network.ErrMessageNotFound)
 	})
@@ -179,9 +248,24 @@ func TestMessageTracker_Delete(t *testing.T) {
 func TestMessageTracker_Message(t *testing.T) {
 	t.Run("empty tracker", func(t *testing.T) {
 		length := 5
-		mt := network.NewMessageTracker(length)
+		cfg := config.NewViperConfig()
+		dbConfig := cfg.ReadDBConfig()
+		url := dbConfig.AsPostgresDbUrl()
+		db := db.Init(url)
+		db.Db.Exec("DELETE FROM message")
+		mt := network.NewMessageTracker(length, db)
 		msg, err := mt.Message("bleh")
 		assert.ErrorIs(t, err, network.ErrMessageNotFound)
 		assert.Nil(t, msg)
 	})
+}
+
+func createMockDB() *database.PostgresDbService {
+	mockDb, _, _ := sqlmock.New()
+	dialector := postgres.New(postgres.Config{
+		Conn:       mockDb,
+		DriverName: "postgres",
+	})
+	db, _ := gorm.Open(dialector, &gorm.Config{})
+	return &database.PostgresDbService{Db: db}
 }

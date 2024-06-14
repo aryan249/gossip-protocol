@@ -2,10 +2,9 @@ package network
 
 import (
 	"errors"
-
-	"github.com/jinzhu/gorm"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	database "gossip-protocol/db"
+	"gossip-protocol/db/models"
+	"time"
 )
 
 // MessageTracker tracks a configurable fixed amount of messages.
@@ -24,33 +23,78 @@ type MessageTracker interface {
 // ErrMessageNotFound is an error returned by MessageTracker when a message with specified id is not found
 var ErrMessageNotFound = errors.New("message not found")
 
-func NewMessageTracker(length int, dbUrl string) MessageTracker {
+func NewMessageTracker(length int, db database.DBservices) MessageTracker {
 	// TODO: Implement this constructor with your implementation of the MessageTracker interface
 
-	var tracker MessageTracker
+	tracker := newTracker(length, db)
 
-	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
-
-	return Tracker{db: db}
+	return tracker
 }
 
 type Tracker struct {
-	db *gorm.DB
+	db          database.DBservices
+	maxMessages int
 }
 
-func (t *Tracker) Add(msg *Message) (err error) {
+func newTracker(maxMessages int, db database.DBservices) *Tracker {
+	return &Tracker{
+		db:          db,
+		maxMessages: maxMessages,
+	}
+}
+func (t *Tracker) Add(message *Message) (err error) {
+	newDbMessage := &models.DBMessages{
+		MsgID:     message.ID,
+		PeerID:    message.PeerID,
+		Data:      message.Data,
+		CreatedAt: time.Now().Unix(),
+	}
+	if err = t.db.Add(newDbMessage, t.maxMessages); err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 func (t *Tracker) Delete(id string) (err error) {
-	return err
+	if err := t.db.Delete(id); err != nil {
+		if err.Error() == "record not found" {
+			return ErrMessageNotFound
+		} else {
+			return err
+		}
+	}
+	return nil
 }
 
 func (t *Tracker) Message(id string) (message *Message, err error) {
+	dbMessage, err := t.db.GetMessageById(id)
+	message = &Message{}
+	if err != nil {
+		if err.Error() == "record not found" {
+			return nil, ErrMessageNotFound
+		} else {
+			return nil, err
+		}
+	}
+	message.ID = dbMessage.MsgID
+	message.PeerID = dbMessage.PeerID
+	message.Data = dbMessage.Data
 	return message, nil
 }
 
-func (t *Tracker) Messages(id string) (messages []*Message, err error) {
-	return messages, nil
+func (t *Tracker) Messages() (messages []*Message) {
+	dbMessages := t.db.GetAll()
+	messages = make([]*Message, 0)
+	for _, dbMessage := range dbMessages {
+		newMessage := &Message{
+			ID:     dbMessage.MsgID,
+			Data:   dbMessage.Data,
+			PeerID: dbMessage.PeerID,
+		}
+		messages = append(messages, newMessage)
+
+	}
+
+	return messages
 }

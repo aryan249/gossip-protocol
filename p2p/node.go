@@ -87,7 +87,6 @@ func newNode(ctx context.Context, log *logrus.Entry, p2pCfg Config, obsReceiveRe
 
 		obsReceiveRes: obsReceiveRes,
 		obsSendReq:    obsSendReq,
-		SendToPerpApi: p2pCfg.SendToPerpApi,
 	}
 
 	log.WithFields(logrus.Fields{

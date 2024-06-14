@@ -27,11 +27,10 @@ type PerpApiConnectionGater struct {
 	perpApiAddr []*common.Address
 }
 
-func NewConnectionGater(ctx context.Context, log *logrus.Entry, perpApiAddr []*common.Address) connmgr.ConnectionGater {
+func NewConnectionGater(ctx context.Context, log *logrus.Entry) connmgr.ConnectionGater {
 	return &PerpApiConnectionGater{
-		ctx:         ctx,
-		log:         log,
-		perpApiAddr: perpApiAddr,
+		ctx: ctx,
+		log: log,
 	}
 }
 
