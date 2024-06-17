@@ -1,0 +1,8 @@
+{
+  "logger-level": "debug",
+  "p2p_config": {
+    "private_key": "",
+    "bootstrap_node": "/ip4/127.0.0.1/tcp/10015/p2p/16Uiu2HAmEH6k5wsPMMSe2Z2vyyeHn8fwPJBL7UDGt4oYCgqPELms",
+    "listen_addresses": ["/ip4/0.0.0.0/tcp/10016", "/ip6/::/tcp/10016"]
+  }
+}

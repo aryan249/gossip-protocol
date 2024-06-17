@@ -11,6 +11,7 @@ func Processor(ctx context.Context, wg *sync.WaitGroup, obsReceiveRes <-chan net
 	for {
 		select {
 		case m := <-obsReceiveRes:
+			println("new message with received with peer id", m.PeerID)
 			tracker.Add(&m)
 		case <-ctx.Done():
 			return nil

@@ -8,13 +8,6 @@ import (
 
 var lock = sync.Mutex{}
 
-const RelayersPubsubTopic = "relayers/" + "0.5"
-const PerpAPIPubsubTopic = "perpApiSync/" + "0.5"
-
-func (n *Node) IndividualRelayersPubsubTopic() string {
-	return "relayers_" + n.Node.ID().String() + "/" + "0.5"
-}
-
 // signAndPublishRelayersMessage sends a message to the relevant pubsub topic.
 func (n *Node) PublishRelayersMessage(topic string, addressedMsg network.Message) error {
 	lock.Lock()
@@ -38,16 +31,12 @@ func (n *Node) PublishMessageLoop(topic string, wg *sync.WaitGroup) {
 			}
 
 			if err := n.PublishRelayersMessage(topic, msg); err != nil {
-				n.log.WithError(err).Errorf("sign and publish error")
+				n.log.WithError(err).Errorf("publish error")
 			}
 		case <-n.ctx.Done():
 			return
 		}
 	}
-}
-
-type PerpApiTopicMessageHandler struct {
-	n *Node
 }
 
 type NewMessageHandler struct {

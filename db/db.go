@@ -36,14 +36,15 @@ func Init(dbUrl string) *PostgresDbService {
 
 func (db *PostgresDbService) Add(msg *models.DBMessages, maxMessages int) error {
 	messages := make([]*models.DBMessages, 0)
-	msg.ID = strconv.Itoa(int(time.Now().Nanosecond())) + msg.MsgID
-	db.Db.Order("created_at").Find(&messages)
-	println("here outisde len", len((messages)))
-	if len(messages) != 0 && len(messages) >= maxMessages {
-		println("here inside for deleting=====================")
+	var count int64
+	db.Db.Model(&models.DBMessages{}).Distinct("msg_id").Count(&count)
 
-		if err := db.Delete(messages[0].MsgID); err != nil {
-			return err
+	msg.ID = strconv.Itoa(int(time.Now().Nanosecond())) + msg.MsgID
+	db.Db.Model(&models.DBMessages{}).Order("created_at").Find(&messages)
+	if count >= int64(maxMessages) {
+
+		if deleteQuery := db.Db.Delete(messages[0]); deleteQuery.Error != nil {
+			return deleteQuery.Error
 		}
 
 	}
@@ -55,15 +56,13 @@ func (db *PostgresDbService) Add(msg *models.DBMessages, maxMessages int) error 
 
 func (db *PostgresDbService) Delete(id string) error {
 	var msg models.DBMessages
-	println("=================== here for deleting")
 	if result := db.Db.Where("msg_id = ?", id).Limit(1).Take(&msg); result.Error != nil {
 		return result.Error
 	}
 	if result := db.Db.Delete(&msg); result.Error != nil {
 		return result.Error
 	}
-
-	println("here ==================")
+	println("messages with id deleted", id)
 	return nil
 }
 
@@ -77,11 +76,19 @@ func (db *PostgresDbService) GetMessageById(id string) (*models.DBMessages, erro
 
 func (db *PostgresDbService) GetAll() []*models.DBMessages {
 	messages := make([]*models.DBMessages, 0)
-
+	distinctMessages := make([]*models.DBMessages, 0)
+	mapOfMessages := make(map[string]*models.DBMessages)
 	if result := db.Db.Model(&models.DBMessages{}).Order("created_at").Find(&messages); result.Error != nil {
 		log.Printf("error while fetching all messages %s", result.Error)
 		return messages
 	}
 
-	return messages
+	for _, msg := range messages {
+		if mapOfMessages[msg.MsgID] == nil {
+			mapOfMessages[msg.MsgID] = msg
+			distinctMessages = append(distinctMessages, msg)
+		}
+	}
+
+	return distinctMessages
 }

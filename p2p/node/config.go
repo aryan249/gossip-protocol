@@ -88,7 +88,6 @@ func ToDiscoveryMethod(methods []string) ([]DiscoveryMethod, error) {
 }
 
 type Config struct {
-	UserAgent        string
 	PrivateKey       crypto.PrivKey
 	ListenAddresses  []multiaddr.Multiaddr
 	BootstrapPeers   []*peer.AddrInfo

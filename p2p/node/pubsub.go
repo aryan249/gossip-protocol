@@ -136,6 +136,10 @@ func (pm *PubsubManager) TopicSubscriptionChannel(topic string) <-chan network.M
 	}
 }
 
+func (pm *PubsubManager) GetTopicSubscriptionChannel(topic string) chan network.Message {
+	return pm.topicSubscriptions[topic].topicSubscriptionChannel
+}
+
 func (pm *PubsubManager) cancelTopicSubscription(topic string) {
 
 	pm.mapLock.Lock()
@@ -209,7 +213,7 @@ func (pm *PubsubManager) processTopic(topic string, wg *sync.WaitGroup) {
 		var bm network.Message
 		if _, containsKey := pm.topicSubscriptions[topic]; containsKey {
 			bm = network.Message{}
-			err = json.Unmarshal(msg.Data, bm)
+			err := json.Unmarshal(msg.Data, &bm)
 			if err != nil {
 				pm.log.WithError(err).Trace("failed to unmarshal message")
 				pm.mapLock.Unlock()

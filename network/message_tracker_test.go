@@ -122,9 +122,6 @@ func TestMessageTracker_Add(t *testing.T) {
 		}
 
 		msgs := mt.Messages()
-		for _, msg := range msgs {
-			println(msg.ID)
-		}
 		assert.Equal(t, []*network.Message{
 			generateMessage(0),
 			generateMessage(1),
@@ -187,6 +184,7 @@ func TestMessageTracker_Cleanup(t *testing.T) {
 		}
 
 		msgs := mt.Messages()
+
 		assert.Equal(t, []*network.Message{
 			generateMessage(5),
 			generateMessage(6),

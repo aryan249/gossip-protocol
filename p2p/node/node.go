@@ -20,13 +20,12 @@ import (
 )
 
 type Node struct {
-	ctx       context.Context
-	log       *logrus.Entry
-	conf      Config
-	userAgent string
-	Host      host.Host
-	conn      *ConnectionManager
-	Pubsub    *PubsubManager
+	ctx    context.Context
+	log    *logrus.Entry
+	conf   Config
+	Host   host.Host
+	conn   *ConnectionManager
+	Pubsub *PubsubManager
 }
 
 func NewNode(ctx context.Context, log *logrus.Entry, conf Config) (*Node, error) {
@@ -38,7 +37,6 @@ func NewNode(ctx context.Context, log *logrus.Entry, conf Config) (*Node, error)
 		libp2p.ListenAddrs(conf.ListenAddresses...),
 		libp2p.Ping(true),
 		libp2p.WithDialTimeout(5*time.Second),
-		libp2p.UserAgent(conf.UserAgent),
 		libp2p.ConnectionGater(connGater),
 	)
 	if err != nil {

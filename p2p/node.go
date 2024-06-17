@@ -16,25 +16,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const clientVersion = "perp-relayer/" + "go-scammer"
-
 // Node type - a p2p host implementing one or more p2p protocols
 type Node struct {
 	ctx  context.Context
 	log  *logrus.Entry
 	Node *node.Node
 
-	lock            sync.Mutex
 	prvSecp256k1Key *crypto.Secp256k1PrivateKey
 	prvEcdsaKey     *ecdsa.PrivateKey
 	pubKeyHash      string
-
-	emitBeaconMessages bool
-	EnableSync         bool
-
-	obsReceiveRes chan<- network.Message
-	obsSendReq    <-chan network.Message
-	SendToPerpApi bool
+	obsReceiveRes   chan<- network.Message
+	obsSendReq      <-chan network.Message
 }
 
 func NewP2PNode(ctx context.Context, log *logrus.Entry, obsReceiveRes chan<- network.Message, obsSendReq <-chan network.Message, p2pCfg Config) *Node {
@@ -82,9 +74,6 @@ func newNode(ctx context.Context, log *logrus.Entry, p2pCfg Config, obsReceiveRe
 		prvEcdsaKey:     prvEcdsaKey,
 		pubKeyHash:      pubKeyHash,
 
-		emitBeaconMessages: true,
-		EnableSync:         p2pCfg.EnableSync,
-
 		obsReceiveRes: obsReceiveRes,
 		obsSendReq:    obsSendReq,
 	}
@@ -123,18 +112,18 @@ func (n *Node) IsPeerConnected(peerID peer.ID) bool {
 
 func (n *Node) Start(wg *sync.WaitGroup) {
 
-	relayerHandlers := map[string]MessageHandler{}
+	handlers := map[string]MessageHandler{}
 
-	n.log.Infof("Enabling go-scammer topic")
-	relayerHandlers["go-scammer"] = &NewMessageHandler{
+	n.log.Infof("Enabling go-sammer topic")
+	handlers["go-sammer"] = &NewMessageHandler{
 		n: n,
 	}
 
 	n.Node.ConnectToBootstrapPeers()
 	// Only the main topic is necessary for setting up peer discovery, since every relayer connects to it
-	n.Node.SetUpPeerDiscovery(RelayersPubsubTopic)
+	n.Node.SetUpPeerDiscovery("go-sammer")
 
-	for topic := range relayerHandlers {
+	for topic := range handlers {
 		if err := n.Node.JoinTopic(topic); err != nil {
 			n.log.WithError(err).Panicf("cannot join %s topic", topic)
 		}
@@ -144,10 +133,10 @@ func (n *Node) Start(wg *sync.WaitGroup) {
 	n.Node.Start(wg)
 
 	// Relayers message loop
-	for topic := range relayerHandlers {
+	for topic := range handlers {
 		wg.Add(1)
-		go relayerHandlers[topic].MessageLoop(topic, wg)
+		go handlers[topic].MessageLoop(topic, wg)
 	}
 	wg.Add(1)
-	go n.PublishMessageLoop("go-scammer", wg)
+	go n.PublishMessageLoop("go-sammer", wg)
 }

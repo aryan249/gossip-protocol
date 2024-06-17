@@ -12,7 +12,6 @@ type Config struct {
 	BootstrapNodeAddresses []string
 	PrivateKey             string
 	DiscoveryMethods       []string
-	EnableSync             bool
 }
 
 func ToP2pConfig(config config.P2PConfig) Config {
@@ -21,7 +20,6 @@ func ToP2pConfig(config config.P2PConfig) Config {
 		ListenAddresses:        config.ListenAddresses,
 		BootstrapNodeAddresses: config.BootstrapNodeAddresses,
 		DiscoveryMethods:       config.DiscoveryMethods,
-		EnableSync:             config.EnableSync,
 	}
 }
 

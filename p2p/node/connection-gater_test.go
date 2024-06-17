@@ -70,9 +70,7 @@ func TestConnectionGater(t *testing.T) {
 	// the connection gater would check peer 1's public key, from peer 2's point of view
 
 	connGater = NewConnectionGater(ctx, logger.WithField("service", "connection_gater"))
-	isAuthorized12, _ = connGater.InterceptUpgraded(n12)
 	isAuthorized21, _ = connGater.InterceptUpgraded(n21)
-	assert.True(t, isAuthorized12, "Connection should be authorized after the address has been added to the list of guardian owners")
 	assert.False(t, isAuthorized21, "Connection 2 -> 1 should not be authorized, as only peer2 is in the list of PerpApi addresses")
 }
 

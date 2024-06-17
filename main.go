@@ -51,6 +51,7 @@ func main() {
 	p2pNode.Start(&wg)
 	wg.Add(1)
 	go processor.Processor(ctx, &wg, obsReceiveRes, newTracker)
+	wg.Wait()
 
 }
 
