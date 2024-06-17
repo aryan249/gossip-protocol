@@ -36,12 +36,6 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	go func() {
-		sign := <-c
-		logger.Infof("System signal: %+v\n", sign)
-		cancel()
-	}()
-
 	p2pConfig := p2p.ToP2pConfig(p2pCfg)
 
 	p2pNode := p2p.NewP2PNode(ctx, logger.WithField("layer", "p2p"), obsReceiveRes, obsSendReq, p2pConfig)
@@ -51,6 +45,13 @@ func main() {
 	p2pNode.Start(&wg)
 	wg.Add(1)
 	go processor.Processor(ctx, &wg, obsReceiveRes, newTracker)
+	wg.Add(1)
+	go func() {
+		sign := <-c
+		logger.Infof("System signal: %+v\n", sign)
+		cancel()
+		p2pNode.Node.Stop()
+	}()
 	wg.Wait()
 
 }

@@ -9,7 +9,7 @@
       "discovery_methods": ["mdns"]
     },
     "node_details": {
-      "private_key": ""
+      "private_key": "bb39159966fde2b2353316e2ea0f58da252db67cec22430c6a18f48787d90d02"
     },
     "storage": {
       "url": "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",

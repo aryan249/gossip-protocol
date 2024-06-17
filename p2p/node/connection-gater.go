@@ -11,6 +11,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 
 	// "crypto/ecdsa"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
@@ -21,14 +22,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PerpApiConnectionGater struct {
-	ctx         context.Context
-	log         *logrus.Entry
-	perpApiAddr []*common.Address
+type ConnectionGater struct {
+	ctx            context.Context
+	log            *logrus.Entry
+	TrustedAddress []common.Address
 }
 
 func NewConnectionGater(ctx context.Context, log *logrus.Entry) connmgr.ConnectionGater {
-	return &PerpApiConnectionGater{
+	return &ConnectionGater{
 		ctx: ctx,
 		log: log,
 	}
@@ -37,7 +38,7 @@ func NewConnectionGater(ctx context.Context, log *logrus.Entry) connmgr.Connecti
 // InterceptPeerDial is called on an imminent outbound peer dial request, prior
 // to the addresses of that peer being available/resolved. Blocking connections
 // at this stage is typical for blacklisting scenarios.
-func (c PerpApiConnectionGater) InterceptPeerDial(p peer.ID) (allow bool) {
+func (c ConnectionGater) InterceptPeerDial(p peer.ID) (allow bool) {
 	// We always allow outbound requests
 	return true
 }
@@ -45,7 +46,7 @@ func (c PerpApiConnectionGater) InterceptPeerDial(p peer.ID) (allow bool) {
 // InterceptAddrDial is called on an imminent outbound dial to a peer on a
 // particular address. Blocking connections at this stage is typical for
 // address filtering.
-func (c PerpApiConnectionGater) InterceptAddrDial(peer.ID, ma.Multiaddr) (allow bool) {
+func (c ConnectionGater) InterceptAddrDial(peer.ID, ma.Multiaddr) (allow bool) {
 	// We always allow outbound requests
 	return true
 }
@@ -54,20 +55,20 @@ func (c PerpApiConnectionGater) InterceptAddrDial(peer.ID, ma.Multiaddr) (allow 
 // inbound connection request, before any upgrade takes place. Transports who
 // accept already secure and/or multiplexed connections (e.g. possibly QUIC)
 // MUST call this method regardless, for correctness/consistency.
-func (c PerpApiConnectionGater) InterceptAccept(n network.ConnMultiaddrs) (allow bool) {
+func (c ConnectionGater) InterceptAccept(n network.ConnMultiaddrs) (allow bool) {
 	return true
 }
 
 // InterceptSecured is called for both inbound and outbound connections,
 // after a security handshake has taken place and we've authenticated the peer.
-func (c PerpApiConnectionGater) InterceptSecured(n network.Direction, peer peer.ID, nn network.ConnMultiaddrs) (allow bool) {
+func (c ConnectionGater) InterceptSecured(n network.Direction, peer peer.ID, nn network.ConnMultiaddrs) (allow bool) {
 	return true
 }
 
 // InterceptUpgraded is called for inbound and outbound connections, after
 // libp2p has finished upgrading the connection entirely to a secure,
 // multiplexed channel.
-func (c PerpApiConnectionGater) InterceptUpgraded(n network.Conn) (allow bool, reason control.DisconnectReason) {
+func (c ConnectionGater) InterceptUpgraded(n network.Conn) (allow bool, reason control.DisconnectReason) {
 
 	// determine public key of peer
 
@@ -90,9 +91,9 @@ func (c PerpApiConnectionGater) InterceptUpgraded(n network.Conn) (allow bool, r
 
 	isAuthorized := false
 
-	if len(c.perpApiAddr) > 0 {
-		for index := 0; index < len(c.perpApiAddr); index++ {
-			if strings.ToLower(c.perpApiAddr[index].Hex()) == fromAddress {
+	if len(c.TrustedAddress) > 0 {
+		for index := 0; index < len(c.TrustedAddress); index++ {
+			if strings.ToLower(c.TrustedAddress[index].Hex()) == fromAddress {
 				c.log.Debugf("Authorizing peer %s based on Perp API EOA address", n.RemotePeer())
 				isAuthorized = true
 				break
