@@ -9,9 +9,7 @@
       "discovery_methods": ["mdns"]
     },
     "node_details": {
-      "relayer_name": "nde 1",
-      "worker_addr": "0xd44218Ca8a64bB9a9E2369CA4B767263e13A0782",
-      "private_key": "3a758c201f80ea4c3ebe5b3c13521c80624ac6f223d2fdc7831475a879ed3a60"
+      "private_key": ""
     },
     "storage": {
       "url": "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",

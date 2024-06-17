@@ -1,58 +1,26 @@
 {
-    "name": "Volmex Perpetual Relayer N1",
-    "service": {
-      "host": "0.0.0.0",
-      "port": "8081"
-    },
-    "logger-level": "debug",
-    "p2p_config": {
-      "listen_addresses": [
-        "/ip4/0.0.0.0/tcp/10015",
-        "/ip6/::/tcp/10015"
-      ],
-      "bootstrap_nodes": [],
-      "discovery_methods": ["mdns"],
-      "enable_sync": false
-    },
-    "perp_api_addr":"0x7fA7baB975B3F1660978A1A56682cAA8eb181C93",
-    "prometheus": {
-      "enable": false,
-      "port": "2112",
-      "host":"0.0.0.0"
-    },
-    "matching_config": {
-      "leader": false
-      },
-    "node_details": {
-      "relayer_name": "nde 1",
-      "worker_addr": "0xd44218Ca8a64bB9a9E2369CA4B767263e13A0782",
-      "private_key": "3a758c201f80ea4c3ebe5b3c13521c80624ac6f223d2fdc7831475a879ed3a60"
-    },
-    "workers": {
-      "BSG": {
-        "chain_id": 123454321,
-        "provider": "http://localhost:8545",
-        "spare_provider": "http://localhost:8545",
-        "periphery_contract": "0x90A042a847611adbfc1D6A3B6997E15D522B2570",
-        "worker_addr": "0xd44218Ca8a64bB9a9E2369CA4B767263e13A0782",
-        "gnosis_contract": "",
-        "gas_limit": 2100000,
-        "gas_price": 1,
-        "fetch_interval": 2,
-        "start_block_height": 0
-      }
-    },
-    "storage": {
-      "url": "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",
-      "host": "localhost",
-      "port": 5432,
-      "ssl_mode": "disable",
-      "driver": "postgres",
-      "db_name": "postgres",
-      "user": "postgres",
-      "password": "postgres"
-    },
-    "guardians": []
-  }
-  
-  
+  "logger-level": "debug",
+  "p2p_config": {
+    "listen_addresses": [
+      "/ip4/0.0.0.0/tcp/10015",
+      "/ip6/::/tcp/10015"
+    ],
+    "bootstrap_nodes": [],
+    "discovery_methods": ["mdns"]
+  },
+  "node_details": {
+    "private_key": ""
+  },
+  "storage": {
+    "url": "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",
+    "host": "localhost",
+    "port": 5432,
+    "ssl_mode": "disable",
+    "driver": "postgres",
+    "db_name": "postgres",
+    "user": "postgres",
+    "password": "postgres"
+  },
+  "guardians": []
+}
+
