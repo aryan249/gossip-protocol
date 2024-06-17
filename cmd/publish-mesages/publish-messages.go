@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"gossip-protocol/config"
 	"gossip-protocol/network"
 	"gossip-protocol/p2p/node"
 
@@ -34,16 +33,6 @@ func main() {
 	ctx := context.Background()
 	// create new logger
 	logger := NewRootLogger("debug")
-
-	// read config from config files in config files directory in perp api insert order directory
-	cfg := config.NewViperConfig()
-	loggerLevel := cfg.ReadLogLevelConfig()
-
-	// configure logger
-	logLevel, err := logrus.ParseLevel(loggerLevel)
-	if err == nil {
-		logger.SetLevel(logLevel)
-	}
 
 	prvCrypto, _ := node.ToLibp2pPrivateKey("b2eada77569027933f70e63fbb356a1193bcb3c3d52cba3859d5fd73103d69c8") // enter private key for perp api address that is set in relayers or can be set in config
 	prvEcdsaKey, _ := eth_crypto.HexToECDSA("b2eada77569027933f70e63fbb356a1193bcb3c3d52cba3859d5fd73103d69c8") // enter private key for perp api address that is set in relayers

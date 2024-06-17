@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,6 +27,7 @@ func generateMessage(n int) *network.Message {
 func TestMessageTracker_Add(t *testing.T) {
 	t.Run("add, get, then all messages", func(t *testing.T) {
 		length := 5
+		viper.SetConfigFile("../config-files/config.json")
 		cfg := config.NewViperConfig()
 		dbConfig := cfg.ReadDBConfig()
 		url := dbConfig.AsPostgresDbUrl()

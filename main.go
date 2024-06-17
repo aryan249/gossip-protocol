@@ -16,9 +16,12 @@ import (
 	"gossip-protocol/config"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
+	viper.SetConfigFile("./config-files/config.json")
+
 	cfg := config.NewViperConfig()
 	var wg sync.WaitGroup // Create a WaitGroup
 

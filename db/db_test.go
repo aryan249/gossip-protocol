@@ -5,11 +5,15 @@ import (
 	"gossip-protocol/db/models"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMessageAddition(t *testing.T) {
+	viper.SetConfigFile("../config-files/config.json")
+
 	cfg := config.NewViperConfig()
+
 	dbConfig := cfg.ReadDBConfig()
 	url := dbConfig.AsPostgresDbUrl()
 	db := Init(url)
@@ -38,7 +42,10 @@ func TestMessageAddition(t *testing.T) {
 }
 
 func TestDeleteMessage(t *testing.T) {
+	viper.SetConfigFile("../config-files/config.json")
+
 	cfg := config.NewViperConfig()
+
 	dbConfig := cfg.ReadDBConfig()
 	url := dbConfig.AsPostgresDbUrl()
 	db := Init(url)
@@ -66,7 +73,10 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestGetAllMessages(t *testing.T) {
+	viper.SetConfigFile("../config-files/config.json")
+
 	cfg := config.NewViperConfig()
+
 	dbConfig := cfg.ReadDBConfig()
 	url := dbConfig.AsPostgresDbUrl()
 	db := Init(url)

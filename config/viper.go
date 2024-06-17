@@ -26,11 +26,9 @@ type viperConfig struct{}
 
 func (v *viperConfig) Init() {
 	viper.AutomaticEnv()
-	viper.AddConfigPath("./config-files")
 	replacer := strings.NewReplacer(`.`, `_`)
 	viper.SetEnvKeyReplacer(replacer)
 	viper.SetConfigType(`json`)
-	viper.SetConfigName("config.json")
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
